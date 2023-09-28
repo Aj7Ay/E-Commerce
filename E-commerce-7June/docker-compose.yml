@@ -3,6 +3,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile  # Specify the Dockerfile to use
     ports:
       - "8000:9000" # Map host port 8000 to container port 9000
     volumes:
@@ -24,3 +25,4 @@ services:
 
 volumes:
   db-data:
+
