@@ -1,28 +1,30 @@
 version: '3'
+
 services:
+  # Laravel Application
   app:
     build:
       context: .
-      dockerfile: Dockerfile  # Specify the Dockerfile to use
+      dockerfile: Dockerfile  # Specify the path to your Dockerfile
     ports:
-      - "8000:9000" # Map host port 8000 to container port 9000
-    volumes:
-      - .:/var/www/html
-    env_file:
-      - .env # Use the separate .env.docker file for environment variables
+      - "9000:9000"  # Expose Laravel app on port 9000
     depends_on:
       - db
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=mydatabase
+      - DB_USERNAME=myuser
+      - DB_PASSWORD=mypassword
 
+  # MySQL Database
   db:
     image: mysql:5.7
+    ports:
+      - "3306:3306"  # Expose MySQL on port 3306
     environment:
       MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: 6valy_db
-      MYSQL_USER: admin  # Change this to your desired database username
-      MYSQL_PASSWORD: password  # Change this to your desired database password
-    volumes:
-      - db-data:/var/lib/mysql
-
-volumes:
-  db-data:
-
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
