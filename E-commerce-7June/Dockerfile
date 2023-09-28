@@ -1,31 +1,20 @@
-# Use the official PHP image as the base image
-FROM php:8.0-fpm
+# Build stage for Composer
+FROM composer:2.3.8 as composer_build
 
-# Set the working directory in the container
-WORKDIR /var/www/html
+WORKDIR /app
+COPY . /app
+RUN composer install --optimize-autoloader --no-dev --ignore-platform-reqs --no-interaction --no-plugins --no-scripts --prefer-dist
 
-# Install system dependencies and PHP extensions
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+# Final image
+FROM php:8.1.8
 
-# Install Composer globally
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Copy the application files from the composer_build stage
+COPY --from=composer_build /app/ /app/
 
-# Copy the Laravel application code into the container
-COPY . .
+WORKDIR /app
 
-# Install application dependencies using Composer
-RUN composer install
-
-# Expose port 9000 (used by PHP-FPM)
+# Expose port 9000 within the container
 EXPOSE 9000
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Start the Laravel application on port 9000
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=9000"]
